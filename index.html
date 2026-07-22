@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GOOD GAME 2 — PGT Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0714;
+      --panel: #1a1030;
+      --panel-2: #241542;
+      --violet: #8b5cf6;
+      --violet-soft: #c4b5fd;
+      --violet-deep: #5b21b6;
+      --amber: #ffca6b;
+      --pink: #ff6fae;
+      --cream: #f3ecff;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.25) 0%, transparent 55%),
+        radial-gradient(circle at 10% 50%, rgba(255, 111, 174, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+        var(--bg);
+      background-attachment: fixed;
+      font-family: 'VT323', monospace;
+      color: var(--cream);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Пиксельные рамки (Pixel Borders) */
+    .pixel-box {
+      background: var(--panel);
+      box-shadow: 
+        -4px 0 0 0 #000,
+         4px 0 0 0 #000,
+         0 -4px 0 0 #000,
+         0  4px 0 0 #000,
+        -4px -4px 0 0 var(--violet-deep),
+         4px -4px 0 0 var(--violet-deep),
+        -4px  4px 0 0 var(--violet-deep),
+         4px  4px 0 0 var(--violet-deep);
+      position: relative;
+    }
+
+    a, button, .cabinet, .side-widget, .anime-girl { cursor: pointer; }
+
+    /* Glow Trail */
+    .cursor-glow {
+      position: fixed;
+      top: 0; left: 0;
+      width: 26px; height: 26px;
+      background: radial-gradient(circle, rgba(196, 181, 253, 0.55) 0%, rgba(139, 92, 246, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 999;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: screen;
+      will-change: transform;
+    }
+
+    /* Фишки казино по углам экрана */
+    .corner-chip {
+      position: fixed;
+      width: 48px;
+      height: 48px;
+      z-index: 100;
+      pointer-events: none;
+      filter: drop-shadow(0 0 8px rgba(255, 202, 107, 0.4));
+      animation: chipGlow 3s ease-in-out infinite alternate;
+    }
+    .corner-chip.top-left { top: 12px; left: 12px; }
+    .corner-chip.top-right { top: 12px; right: 12px; }
+    .corner-chip.bottom-left { bottom: 12px; left: 12px; }
+    .corner-chip.bottom-right { bottom: 12px; right: 12px; }
+
+    @keyframes chipGlow {
+      0% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1.08) rotate(10deg); }
+    }
+
+    /* Falling Cards Layer */
+    .falling-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .falling-card {
+      position: absolute;
+      top: -60px;
+      opacity: 0.85;
+      animation: fall linear 1;
+      filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.35));
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      8% { opacity: 0.85; }
+      92% { opacity: 0.85; }
+      100% { transform: translateY(112vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Layout */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1700px;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0 20px;
+    }
+
+    .studio-tag {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--amber);
+      padding: 8px 16px;
+    }
+
+    .logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(24px, 5vw, 48px);
+      letter-spacing: 4px;
+      text-align: center;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .logo span {
+      display: inline-block;
+      color: var(--violet-soft);
+      text-shadow: 0 0 10px rgba(139, 92, 246, 0.8), 0 0 26px rgba(139, 92, 246, 0.5);
+      animation: letterWave 2.6s ease-in-out infinite;
+    }
+
+    .logo span.space { width: 0.5em; }
+
+    @keyframes letterWave {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* Main Grid with ASCII Sidebars */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(200px, 1fr) 220px 1.2fr 220px minmax(200px, 1fr);
+      gap: 16px;
+      align-items: start;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 1400px) {
+      .hero {
+        grid-template-columns: 220px 1fr 220px;
+      }
+      .ascii-col { display: none; }
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; justify-items: center; }
+    }
+
+    /* ASCII Art Columns */
+    .ascii-col {
+      font-family: monospace;
+      font-size: 6px;
+      line-height: 6px;
+      white-space: pre;
+      color: var(--pink);
+      text-shadow: 0 0 4px rgba(255, 111, 174, 0.4);
+      user-select: none;
+      overflow: hidden;
+      opacity: 0.8;
+    }
+    .ascii-col.right {
+      color: var(--violet-soft);
+      text-shadow: 0 0 4px rgba(196, 181, 253, 0.4);
+    }
+
+    /* Пиксельный Аркадный Автомат */
+    .cabinet {
+      width: 100%;
+      max-width: 240px;
+      background: var(--panel-2);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      transition: transform 0.2s ease;
+    }
+
+    .cabinet:hover {
+      transform: translateY(-4px);
+    }
+
+    .cabinet-top {
+      width: 100%;
+      height: 30px;
+      background: var(--violet-deep);
+      border-bottom: 4px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      color: var(--amber);
+    }
+
+    .cabinet .screen {
+      width: 100%;
+      height: 120px;
+      background: #000;
+      margin: 12px 0;
+      border: 4px solid var(--violet);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: inset 0 0 10px rgba(139, 92, 246, 0.5);
+    }
+
+    .cabinet .reel { font-size: 28px; }
+    .cabinet.spin .reel { animation: spinReel 0.4s ease-in-out; }
+
+    @keyframes spinReel {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+      100% { transform: translateY(0); }
+    }
+
+    .cabinet-controls {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #110920;
+      padding: 10px 4px;
+      border-top: 4px solid #000;
+    }
+
+    .pixel-btn {
+      width: 16px; height: 16px;
+      background: var(--pink);
+      box-shadow: inset -2px -2px 0 #000;
+    }
+    .pixel-btn.yellow { background: var(--amber); }
+
+    .cabinet .label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      text-align: center;
+      color: var(--cream);
+      margin-top: 8px;
+    }
+
+    /* Боковые виджеты (Лево/Право) */
+    .side-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 240px;
+    }
+
+    .side-widget {
+      padding: 12px;
+      text-align: center;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+    }
+
+    /* Сексуальная Пиксельная Тян */
+    .anime-girl-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .speech-bubble {
+      position: absolute;
+      top: -48px;
+      background: var(--cream);
+      color: #000;
+      padding: 6px 10px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      border: 2px solid #000;
+      white-space: nowrap;
+      display: none;
+      z-index: 10;
+      box-shadow: 2px 2px 0 var(--pink);
+    }
+
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px 6px 0;
+      border-style: solid;
+      border-color: var(--cream) transparent;
+      display: block;
+      width: 0;
+    }
+
+    .anime-girl {
+      width: 120px;
+      height: 160px;
+      transition: transform 0.15s ease;
+      filter: drop-shadow(0 0 10px rgba(255, 111, 174, 0.4));
+    }
+
+    .anime-girl:hover {
+      transform: scale(1.08) translateY(-2px);
+    }
+
+    /* Poster / Central Area */
+    .poster {
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .poster .title-big {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(20px, 3.5vw, 36px);
+      color: var(--violet-soft);
+      text-shadow: 0 0 14px rgba(139, 92, 246, 0.85);
+      animation: glowPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { text-shadow: 0 0 14px rgba(139, 92, 246, 0.85); }
+      50% { text-shadow: 0 0 25px rgba(196, 181, 253, 1); }
+    }
+
+    .poster .sub {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      color: var(--amber);
+      background: rgba(10, 7, 20, 0.7);
+      padding: 6px 12px;
+      letter-spacing: 1px;
+    }
+
+    /* Description & Download */
+    .desc {
+      margin-top: 24px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .desc p {
+      font-size: clamp(20px, 2.2vw, 26px);
+      line-height: 1.5;
+      margin: 0;
+      color: var(--cream);
+    }
+
+    .download-row { display: flex; justify-content: center; margin-top: 28px; }
+
+    .btn-download {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px;
+      color: #180f2e;
+      background: linear-gradient(180deg, var(--amber), #e8a83e);
+      border: none;
+      padding: 16px 32px;
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      display: inline-block;
+    }
+
+    .btn-download:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 0 15px rgba(255, 202, 107, 0.6);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      color: var(--violet-soft);
+    }
+
+    footer span {
+      color: var(--cream);
+      opacity: 0.6;
+      display: block;
+      margin-top: 6px;
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 3, 12, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      max-width: 760px;
+      width: 100%;
+      max-height: 85vh;
+      overflow: auto;
+      padding: 24px;
+      position: relative;
+    }
+
+    .modal h2 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px;
+      color: var(--violet-soft);
+      margin: 0 0 18px;
+      text-align: center;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      background: var(--pink);
+      border: none;
+      color: #180f2e;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 12px;
+    }
+
+    .shots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .shot-slot {
+      aspect-ratio: 16 / 10;
+      background: #0a0714;
+      border: 2px dashed var(--violet-deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .shot-slot img { width: 100%; height: 100%; object-fit: cover; }
+    .shot-slot .plus { font-family: 'Press Start 2P', monospace; font-size: 20px; color: var(--violet-deep); }
+    .shot-slot input { display: none; }
+
+    /* Flappy Game Area */
+    .game-area { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+    #flappyCanvas {
+      background: #180f2e;
+      border: 2px solid var(--violet-deep);
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+    }
+
+    .game-hud {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 12px;
+      color: var(--violet-soft);
+    }
+
+    .btn-flap {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: #180f2e;
+      background: var(--amber);
+      border: none;
+      padding: 10px 20px;
+    }
+
+    /* Music Toggle */
+    .music-toggle {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 60;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      color: var(--violet-soft);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .music-toggle .dot { width: 8px; height: 8px; background: #555; }
+    .music-toggle.on .dot { background: var(--amber); }
+  </style>
+</head>
+<body>
+
+  <div class="cursor-glow" id="cursorGlow"></div>
+  <div class="falling-layer" id="fallingLayer"></div>
+
+  <!-- Фишки казино по углам -->
+  <svg class="corner-chip top-left" viewBox="0 0 40 40" shape-rendering="crispEdges">
+    <use href="#ic-poker-chip"/>
+  </svg>
+  <svg class="corner-chip top-right" viewBox="0 0 40 40" shape-rendering="crispEdges">
+    <use href="#ic-poker-chip"/>
+  </svg>
+  <svg class="corner-chip bottom-left" viewBox="0 0 40 40" shape-rendering="crispEdges">
+    <use href="#ic-poker-chip"/>
+  </svg>
+  <svg class="corner-chip bottom-right" viewBox="0 0 40 40" shape-rendering="crispEdges">
+    <use href="#ic-poker-chip"/>
+  </svg>
+
+  <!-- SVG Ресурсы -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <!-- Пиксельная фишка казино -->
+      <g id="ic-poker-chip">
+        <rect x="10" y="2" width="20" height="36" fill="#ff6fae"/>
+        <rect x="2" y="10" width="36" height="20" fill="#ff6fae"/>
+        <rect x="6" y="6" width="28" height="28" fill="#e52521"/>
+        <rect x="10" y="10" width="20" height="20" fill="#fff"/>
+        <rect x="14" y="14" width="12" height="12" fill="#ffca6b"/>
+        <!-- Детали / Насечки -->
+        <rect x="18" y="4" width="4" height="4" fill="#fff"/>
+        <rect x="18" y="32" width="4" height="4" fill="#fff"/>
+        <rect x="4" y="18" width="4" height="4" fill="#fff"/>
+        <rect x="32" y="18" width="4" height="4" fill="#fff"/>
+      </g>
+
+      <!-- Карты для заднего фона -->
+      <g id="ic-card-red">
+        <rect width="28" height="38" rx="2" fill="#f3ecff" stroke="#5b21b6" stroke-width="2"/>
+        <rect x="11" y="6" width="6" height="6" fill="#ff6fae"/>
+        <rect x="6" y="15" width="16" height="6" fill="#ff6fae"/>
+        <rect x="11" y="25" width="6" height="6" fill="#ff6fae"/>
+      </g>
+      <g id="ic-card-purple">
+        <rect width="28" height="38" rx="2" fill="#f3ecff" stroke="#5b21b6" stroke-width="2"/>
+        <rect x="11" y="6" width="6" height="14" fill="#8b5cf6"/>
+        <rect x="6" y="12" width="16" height="6" fill="#8b5cf6"/>
+        <rect x="9" y="23" width="10" height="7" fill="#8b5cf6"/>
+      </g>
+    </defs>
+  </svg>
+
+  <div class="wrap">
+    <header>
+      <div class="studio-tag pixel-box">PGT STUDIO</div>
+      <div class="logo" id="logoText"></div>
+    </header>
+
+    <section class="hero">
+      <!-- ASCII ЛЕВО (Дьяволица) -->
+      <div class="ascii-col">
+               \,_     __,----.
+           ,_,-/_   _,' _,'-"""""-.
+          ( : : ,),' _,'_,--"""""---.__
+         _,\ ::',',-'  '_,---""""""---.\                                       ____
+       ,': :\:"'       ' _,''" ___,---.__                              _____,-'. . \ 
+      J : : /          ,'__,--'   _____  \                        _,--::::::: . . . `.
+      L: : /           ,'___,----' ___ `--.                     ,::::::::'   . . . . J
+      J :-'   .       --'          --.`. ) \                 _,:::::'     . . . . . .L 
+      ,' :   : .  ___----.__ --.___ `.`.\  '               ,::::'      . . . . . . .J
+     / : :  : :  ,--::,,   ,`.--.`.`-.`.)               _,::'       . ..::::. . . . L
+     L : ':.::   L::'  ``:/   `. `.\  `.\            _,:::'      . ..:::'. . . . . / 
+    J  .:.':::   F::     J `.   `. \\   \\         ,::::'     . ..::' . .__,-' ..:J 
+    L,::::::::.  J::     F  ,""\  \ LL   \L     ,-:::'    . . .::' ....:'...  ..::L
+ ,-,.''''''''':.  L:    J  J ):.`. `JF    '__,-::::.   . . . .....:;:-'.'    ..::/
+/ . ;;;;;;;''''::.);     \ J/CD:\,F  L:-.-:::::'. . . .  ..:;;;:--'.:''   . ..::/
+L:. _     '''\' (:'         L:;:JP    .::\:::::. . . .:;;:-'   ,::''     . ..::/
+|:.' _,       `._`----.______  "'      .':L:::::::;;:-'       /:'       . ..::'
+J: .::|      .`. "-------""      ._,    .:|::;;;-'          ,:'      . . .::/
+-L:_::J ,    \`.`.                 (     :J-'             ,:'       . . .::'
+::,-`.J J J L\\ `.`.   ,- .         ,'\  .:L             /:      . . ..::/
+ ; ; ,J  L L \``. `-;,' ,,oo        ""'   :J           ,:'      . . ..::'
+ :; :  L J\ \``.``._/_ =dP                ':L         /""""-.  . . .::/ 
+':::..,J`.L \`.\`._J  =dQ                 .:F       ,'       `. ..:::'
+':::    \\`\``.`._ F- =dP. . . . . . . . ;:'       /           L.::/
+' ; :   `.\\\_\`.,-._  ::::::::::::::;:-'        ,'            J::/
+ ;:  `./   `.`.--`._ `-:;:--.;;;;;--'::\       .--.            |\/
+: : __J         J::.`-----@'\::.. . .'::\    ,::'. \           F L
+__::::\         |:::: J      \::.. . .'::\  /:: .'.:L          , J
+J :::::L        F:::: |       L::.. . .'::\/:: .  :.J          L-'
+ L:::::J       J::::: F       J:::.. .  .::\: .  .: .L         F
+ |::::::L      |'':::J      ,-'"""`-. ..  . ..  .::. J        /
+ J::'::.J      F: :::|    ,'         `. . .  ` .::. . L      /
+  L: '::.L    J .  ::F   /             `.......:'. . .J     J
+  |   :: |    F :  :J   J              J \''''''. . . .\    J 
+  J  ,.::J   J  .  :|   | |             \ \. . . . . . .`---.\__ 
+   L,  :::L  F :. .:L   | J              L \. . . . `-.: .      `--.__
+   |  .:::| /. ::.:J    |  L             J  \. . .'. ':`-..           `-._
+   |   ::;J/: :::::F    |  |              \  \       '. . `. .         . dMb 
+   |  ,::;:L: ::::J     |  |               L  L        . . .`..         .`QJ
+   |   ::;:| :::::F     J  J               J   L      . . . . \:.      . . |
+   |   :;::| ::::J       L  L               L  J     . . . . . \:.. . . . .|
+   F  ,';::| ::::F       J  J               J  F. . .,ooo.. . . L::. . . . F
+  J  ,  ;::|: . J         L  \               L/. . ..dM()b . . .J:: . . . J
+  | ,  ;:::J . .F         J   \         __...J: . . .`QMP'. . . J::. . ../
+  |    ;::::L ./           \   L    _,-'   .::L: . . . . . . . .F:: . .:/
+  |    ;::::|./             \  J  ,:::.     ::J:. . . . . . . :/::'. ::'
+  |   ;:::::|/               L  \(\:::       ::L:. . . . . .::/::::::'
+  F   ;::.::|                J   `"L:::      ::J:::.....:::::'::::;'\
+ J    ;:::::|                 \    J:::.     .::L:::::::::,,._,,"    L
+ |   ;::.:::F                  \    \:::.     .:J`,:,,_,,"'"""" . ; .J
+ L   ;::::.J                    L    L::       .:L""""'  .;. .;. ..; J
+J.   ;:.:::|                    J    J::.       :J. . ; . .;. .;.  ;.L
+L   ;::::::|                     \    \::.  . . .:L. . ; . ; . ; .;./
+ .  ;:.::.:F                      \    L::.  . . :J . .;. ;/\ ; ./\(
+.  ;::::::J                        \   J::   :.: .:\ .;. ; \/;/\ \F
+ . ;.:::::|                         \   \::  ::.. .:\;  ./\/\ \ \/
+. ;::::.::|                          \   \:: .::.  .:\ \ \   \/  |
+ ;:.::::::L                           L   L::. ::.. .:`.\/       |
+;:::::::;J                            |   J::   ::.  .::\        J
+:.:::.::;|                            J    L::   ::.  . :`.      |
+:::::::;.|                             L   J::::.  '   . ::\     F
+::::::;. L                             J    \::::.      . .:\   J
+:::.::; J                            ,'      \::::.      . .:\  |
+:::::; .|                         _,'         `.:::::     . ::L F
+::::; . L                       ,'    ,         \::::.     .::JJ
+.:::;. J                      ,'    ,'J    __,   `.:::.     .::\
+:::;. .|                    ,'    ,'   L,-','____, \:::..    .::\
+::;. . L                  ,'    ,'       ,'|        `.::..    .::\ 
+::; . J                 ,'             ,'  |          \::..    .::\ 
+:; . .|                ;'--'M-K"------.____`           `.::.    .::\
+; . . L              ,'                .   `--._         \::.    .::\
+;. . J              /        ,          . . .:::`--.     /`.:.    .::\
+. . .L             /        /            . . .::::::`-.  L  \. .   .::\
+ . .J             J        J            . . . . .::::::`.J   \. .   .::\
+. . L             L       .F             . . . . .::::::\`    \. .   .::\
+ . J             J        J             . . . . . .::::::\     \. .   . .L
+. .L             F        F. .           . . . . . :::::::\     \:.  ..::J
+ .J              F      . J . .         . . . . . .::::::::\     ):  ::::J
+. L              L . . . .:F . .         . . . . . ::: . .::\   /:  ::::.L
+ /               J  . . . .J. . .       . . . . . .:: . . .::\ /.  ::::: L
+/                 \. . . . :\. . . . . . . . . . .:: . . . .::J.  ::::::.L
+                   L. . . .::\. . . . . . . . . .:: . . . . .:L  ::::::: |
+                   L ....:::::`.::...... . . . : .       . . :L. :::::::.|
+                  /:'. '':::::::`.::::::. ..::. .         . . J :::::: . |
+                 J::  . . .:::::::`.:::::::::.             . .,'::::::: .| 
+                 L:      . . .::::::\:::::::. .             ,' .'/ ::.:: J 
+                /:        . . .::::::\:::::: . .          ,' .:'/ ::_ ::.J 
+               J::           . . :::::L:::::. . .       ,'.:''./ ./ / :: :L
+               L:           . . .:::::J::::: . . .      '''  ./ ./ / :J :J
+              J::          . . . ::::::\::::: . . .         ,'.:' / :/L :L
+              |::           . . .:::::J L::::. . . .      ,'.:'  / :/J :J
+              L:           . . . :::::L J:::::. . . .    (_:'   / :/ L :L
+             J::          . . . :::::J   \:::::. . .           / :/ / :/
+             |::           . . .:::::L    \:::: . . .        .'.:' J :/ 
+             |::          . . . ::::J      \:::::. . .      I_:'   L:/ 
+             L:          . . . .::::L       \:::: . . .           J JL 
+            J::           . . .::::J         `.::: . .            L_LJ
+            |::          . . . ::::L           \::::. .           . ::L
+            |::           . . .:::J             `.:: . .           . :|
+            |::          . . .::::L               \:::.           . .:J
+      </div>
+
+      <!-- ЛЕВАЯ КОЛОНКА -->
+      <div class="side-col">
+        <!-- Автомат Скриншотов -->
+        <div class="cabinet pixel-box" id="openShots">
+          <div class="cabinet-top">SCREENSHOTS</div>
+          <div class="screen">
+            <span class="reel">🎰</span><span class="reel">🖼️</span><span class="reel">🎰</span>
+          </div>
+          <div class="cabinet-controls">
+            <div class="pixel-btn"></div>
+            <div class="pixel-btn yellow"></div>
+            <div class="pixel-btn"></div>
+          </div>
+          <div class="label">ОТКРЫТЬ ГАЛЕРЕЮ</div>
+        </div>
+
+        <!-- Пиксельный Бумбокс -->
+        <div class="side-widget pixel-box">
+          <div style="font-size: 24px; margin-bottom: 6px;">📻</div>
+          <div>CASINO RETRO RADIO</div>
+        </div>
+      </div>
+
+      <!-- ЦЕНТРАЛЬНАЯ АФИША -->
+      <div>
+        <div class="poster pixel-box">
+          <div class="title-big">GOOD<br>GAME 2</div>
+          <div class="sub pixel-box">CLICKER × BOSS FIGHT</div>
+        </div>
+
+        <section class="desc pixel-box">
+          <p>Эта игра — кликер с элементами босс-файта. Копи монеты, прокачивай урон и побеждай эпических боссов в пиксельном стиле!</p>
+        </section>
+
+        <div class="download-row">
+          <!-- Сюда подставишь ссылку скачивания в href -->
+          <a class="btn-download pixel-box" href="ВСТАВЬ_ССЫЛКУ_СУДА" id="downloadLink" target="_blank">СКАЧАТЬ</a>
+        </div>
+      </div>
+
+      <!-- ПРАВАЯ КОЛОНКА -->
+      <div class="side-col">
+        <!-- Автомат Mini-Game -->
+        <div class="cabinet pixel-box" id="openFlappy">
+          <div class="cabinet-top">MINI GAME</div>
+          <div class="screen">
+            <span class="reel">7️⃣</span><span class="reel">🐤</span><span class="reel">7️⃣</span>
+          </div>
+          <div class="cabinet-controls">
+            <div class="pixel-btn yellow"></div>
+            <div class="pixel-btn"></div>
+            <div class="pixel-btn yellow"></div>
+          </div>
+          <div class="label">ИГРАТЬ В FLAPPY</div>
+        </div>
+
+        <!-- Сексуальная Пиксельная Тян (Ассистент) -->
+        <div class="anime-girl-container">
+          <div class="speech-bubble" id="speechBubble">Привет, милашка! ♡</div>
+          <svg class="anime-girl" id="animeGirl" viewBox="0 0 100 140" shape-rendering="crispEdges">
+            <!-- Длинные розовые волосы сзади -->
+            <rect x="18" y="10" width="64" height="95" fill="#ff6fae"/>
+            <rect x="12" y="30" width="76" height="80" fill="#e52521"/>
+            
+            <!-- Пышные формы / Силуэт тела (Кожа) -->
+            <rect x="30" y="20" width="40" height="30" fill="#ffd8c0"/> <!-- Лицо -->
+            <rect x="42" y="50" width="16" height="10" fill="#ffd8c0"/> <!-- Шея -->
+            <rect x="22" y="58" width="56" height="26" fill="#ffd8c0"/> <!-- Глубокое декольте -->
+            <rect x="32" y="80" width="36" height="22" fill="#ffd8c0"/> <!-- Талия/Животик -->
+            <rect x="30" y="102" width="18" height="38" fill="#ffd8c0"/> <!-- Левая ножка -->
+            <rect x="52" y="102" width="18" height="38" fill="#ffd8c0"/> <!-- Правая ножка -->
+
+            <!-- Черные чулки -->
+            <rect x="30" y="112" width="18" height="28" fill="#150c28"/>
+            <rect x="52" y="112" width="18" height="28" fill="#150c28"/>
+            <rect x="30" y="112" width="18" height="3" fill="#ff6fae"/> <!-- Подвязка -->
+            <rect x="52" y="112" width="18" height="3" fill="#ff6fae"/>
+
+            <!-- Выразительное сексуальное платье / Белье -->
+            <rect x="22" y="66" width="56" height="16" fill="#150c28"/> <!-- Лиф -->
+            <rect x="28" y="62" width="44" height="4" fill="#ff6fae"/>
+            <rect x="28" y="82" width="44" height="20" fill="#150c28"/> <!-- Юбочка -->
+            <rect x="24" y="98" width="52" height="6" fill="#ff6fae"/>
+
+            <!-- Личико / Глаза с ресничками -->
+            <rect x="34" y="30" width="10" height="12" fill="#8b5cf6"/>
+            <rect x="36" y="32" width="4" height="5" fill="#fff"/>
+            <rect x="34" y="28" width="12" height="3" fill="#150c28"/> <!-- Реснички -->
+
+            <rect x="56" y="30" width="10" height="12" fill="#8b5cf6"/>
+            <rect x="58" y="32" width="4" height="5" fill="#fff"/>
+            <rect x="54" y="28" width="12" height="3" fill="#150c28"/>
+
+            <!-- Румянец -->
+            <rect x="32" y="38" width="8" height="4" fill="#ff6fae" opacity="0.8"/>
+            <rect x="60" y="38" width="8" height="4" fill="#ff6fae" opacity="0.8"/>
+
+            <!-- Губки -->
+            <rect x="46" y="42" width="8" height="4" fill="#e52521"/>
+
+            <!-- Пышная челка -->
+            <rect x="24" y="12" width="52" height="14" fill="#ff6fae"/>
+            <rect x="42" y="22" width="16" height="10" fill="#ff6fae"/>
+            <!-- Заколка Сердечко -->
+            <rect x="24" y="18" width="6" height="6" fill="#ffca6b"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ASCII ПРАВО (Девушка) -->
+      <div class="ascii-col right">
+                                     _____
+                                 .-~~     ~~~~--......___
+                                >  |-.                   ~~--._
+                                |  |  ~T-....______     ______ `.
+                                |  |   |       .   ~~~~~      ~~~
+                                |  |   `.     /    -~~-.
+                                |  |  . |   .'    '             /`.
+                                :  |  | |   |    '            ,' ,.`.
+                                \  |  | /   | ,''            / ,' \  ~-.
+                                 \  . |`-~~--L |.--.       ,'     /.   `
+                          ____  ,'\ <  .~.'   ~`'   `~-.  /   ,  / <    `.
+                        /~   _\/   `' '  |           .  \/  ,' .'.~,\    `.
+                       /   ,d#b    / '   |           `     '.-~~~,'  <    `m.
+                       \  m####b  | '    `            |    ~~~~->  ,d#.    "##
+                     ,-~' ######b ||   |  `           `          \d"d#b      Y
+                      ~:  #######b|:   `\  `         ` :          "d###b      .
+                       | d########b\    \\  `.        :|           "####b     :
+                       ' ##########b     \`-.  .      |`.:          "####b     .
+                      ;  ###########\     `--`=`.\     .||          |#####b    |
+                     :   ###########b\ :      __  .   '|;|      \   d######\   |
+                      \.'############/.`   .-~ \-.|  /./,'      .' d######P `  |
+                       ; ###########P | \  ;,b `~|; /,'~`      ,',d######P   | |
+                      > :"#########P  '  : \ /.  |,' T~|/ , +-~ db"#####P    | |
+                       ~| ########P ,'   '  `-'  ~   P ; /  |  d#######P      \|
+                         ~`#####P' /    /           >'  >   `~""######P
+                           `###P ,'    >          `.`- / ;  |    "###P..
+                        __  "#P /     / \      ._ /   | .   `.    ##P__ ~7~
+                     .-~  ~--~\/    ,'/ ,`     | '   _| |     \ -_ P~  ~-'
+                    '~\_.-~~7\/    / |L/. `.   `'  .-`  |`.   \`.  ~~~.
+                      ~    / |    .| '|-/   `.  .-~\  \\ \_`-. \`  \`.|
+                          /  /`.  |_\\\_\.-...~~>__.\  \`-.~~ `-|   | \
+                         '~., ##m##"      \  oo. .'  `.~~T~ ~~~/:-. | |
+                           |  ###P   .'   |_|88)mmmm'-~  |    / | | /,'
+                              ##"    :   dd##<"""####b~-. .  /  | ;-
+                              |      :  d###P     ~"~~   < `>  ,'/
+                              |      `./"#P~        |   /    \  ~
+                              |       /  |          ;  /      |
+                              `      /   |      |     .       |
+                               \    /    |      |  :  '       '
+                                \  ; /`.  \     \  ','       ,
+                                 \| '   `.  \  | `./        .
+                                  |/      `--._;_ /   ._ _.+'
+                                  |             /`-..   ~  |
+                                   \           |   ,'      |
+                                    `.          \,'/       |
+                                      `._      ,' /        |
+         _...---.._                     \.       /_        |
+       ,'          ~~"--..                ~     /~ ~-_     ;
+      /                   ~"-._            \   /      T.  .
+     /                         ~-.         |  /       `8bd8
+    /              .              `-.      | '         8888
+    \             -.\                `-.    '`.        8888b
+     \              ~-.                 `-.   |   :   d8888P\
+  ,-~~\                ~.                  `. |   ;  d8888P  \
+ /     \                 `.                 .~'.    d8888P    \   _.,_
+.       \                  `.               `.  `. d8888P      \-~  ~ ~-.
+|        \                   .               |    >8888P        \        ~-.
+|         \                   \              |     \88P .        \         |
+ .         `.                  \             |     |`P-~          .        \
+             \                  \            |     |              |        .'
+  `           `.                 \           |     |              |        <
+   `           \.                 \          |     |              |        '
+    `           \`.                \         '     |              ;       ~;
+     .           \ -.               \       '      '             .        /
+     `               -.              \     '      :              ;      /~
+      .           `    -              \  .'       '             .~-.  /~
+      `            \    ~-             \~        /              ;   ~~
+       `            .     ~.            \     _-~              /
+        .            \      -_           \  .-                /
+        `                    _-           \~                .'
+         .            |`.---~  ~.          \              _-
+         `            |  `.___.-~\          \         _.-~
+          .           |    `.     \          \~-.__.-~
+          `           |      `-.   `.         \
+           `          `         ~~---\         \
+            .          .              `.        `.
+            `          :                \         `.
+             \         `                 \          `.
+              \         .                 `.         `~~-.
+               \        :                   `         \   \
+                .        .                   \         : `.\
+                `        :                    \        |  | .
+                 \        .                    \       |  |
+                  \       :                     \      `  |  `
+                   .                             .      | |_  .
+                   `       `.                    `      ` | ~.;
+                    \       `.                    .      . .
+                     .       `.                   `      ` `
+                     `.       `._.                 \      `.\
+                      `        >  \                 `.     | .
+                       `       `   :                 `     | |
+                        `       \                     `    | |
+                         `.     |   \                  :  .' |
+                          `     |    \                 `_-'  |
+                           :    | |   |                 :    ;
+                           `    ; |~-.|                 :    '
+                            :   \ |                     `   ,
+                            `    \`                      :  '
+                             :    \`                     `_/
+                             `     .\
+                              `    ` \
+                               \    | :
+                                \  .'  :
+                                 T~    :
+                                 |    .'
+                                 |    :
+                                 |    '
+                                 |   /
+                                 `_.'
+      </div>
+    </section>
+
+    <footer>
+      РАЗРАБОТЧИК: PGT STUDIO
+      <span>© 2026</span>
+    </footer>
+  </div>
+
+  <!-- Модальное окно скриншотов -->
+  <div class="modal-overlay" id="shotsModal">
+    <div class="modal pixel-box">
+      <button class="modal-close pixel-box" data-close>X</button>
+      <h2>СКРИНШОТЫ ИГРЫ</h2>
+      <div class="shots-grid" id="shotsGrid"></div>
+    </div>
+  </div>
+
+  <!-- Модальное окно Flappy Bird -->
+  <div class="modal-overlay" id="flappyModal">
+    <div class="modal pixel-box">
+      <button class="modal-close pixel-box" data-close>X</button>
+      <h2>FLAPPY GOOD GAME</h2>
+      <div class="game-area">
+        <div class="game-hud">СЧЁТ: <span id="score">0</span></div>
+        <canvas id="flappyCanvas" width="320" height="420"></canvas>
+        <button class="btn-flap pixel-box" id="flapBtn">ЛЕТЕТЬ (SPACE)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Переключатель музыки -->
+  <div class="music-toggle pixel-box" id="musicToggle">
+    <span class="dot"></span><span id="musicLabel">MUSIC OFF</span>
+  </div>
+
+  <script>
+    /* ---------- Анимация логотипа ---------- */
+    (function(){
+      const text = "GOOD GAME 2";
+      const holder = document.getElementById('logoText');
+      [...text].forEach((ch, i) => {
+        const span = document.createElement('span');
+        if (ch === ' ') {
+          span.className = 'space';
+        } else {
+          span.textContent = ch;
+          span.style.animationDelay = (i * 0.08) + 's';
+        }
+        holder.appendChild(span);
+      });
+    })();
+
+    /* ---------- Подсветка курсора ---------- */
+    (function(){
+      const glow = document.getElementById('cursorGlow');
+      let mx = window.innerWidth / 2, my = window.innerHeight / 2, gx = mx, gy = my;
+      document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+      function loop(){
+        gx += (mx - gx) * 0.18;
+        gy += (my - gy) * 0.18;
+        glow.style.transform = `translate(${gx}px, ${gy}px)`;
+        requestAnimationFrame(loop);
+      }
+      loop();
+    })();
+
+    /* ---------- Падающие карты ---------- */
+    (function(){
+      const layer = document.getElementById('fallingLayer');
+      const sprites = ['#ic-card-red', '#ic-card-purple'];
+      function spawn(){
+        const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        const size = 22 + Math.random() * 18;
+        use.setAttribute('href', sprites[Math.floor(Math.random() * sprites.length)]);
+        s.setAttribute('width', size);
+        s.setAttribute('height', size * 1.35);
+        s.classList.add('falling-card');
+        s.style.left = Math.random() * 100 + 'vw';
+        const dur = 6 + Math.random() * 6;
+        s.style.animationDuration = dur + 's';
+        s.appendChild(use);
+        layer.appendChild(s);
+        setTimeout(() => s.remove(), dur * 1000 + 200);
+      }
+      setInterval(spawn, 600);
+    })();
+
+    /* ---------- Аудио (8-bit чиптюн) ---------- */
+    let actx;
+    function ensureAudio(){
+      if (!actx) { actx = new (window.AudioContext || window.webkitAudioContext)(); }
+      return actx;
+    }
+
+    function playBeep(freq = 440, dur = 0.08, type = 'square', vol = 0.05){
+      try {
+        const ctx = ensureAudio();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + dur);
+      } catch(e) {}
+    }
+
+    /* Игривый 8-bit звук для Тян */
+    function playChirp(){
+      playBeep(987, 0.05, 'sine', 0.1);
+      setTimeout(() => playBeep(1318, 0.08, 'sine', 0.12), 40);
+      setTimeout(() => playBeep(1760, 0.12, 'triangle', 0.1), 100);
+    }
+
+    const melody = [523, 0, 659, 0, 784, 659, 0, 523, 0, 392, 0, 523, 659, 0, 784, 0];
+    let musicOn = false, musicStep = 0, musicTimer = null;
+
+    function musicTick(){
+      const mNote = melody[musicStep % melody.length];
+      if (mNote) playBeep(mNote, 0.14, 'square', 0.035);
+      musicStep++;
+    }
+
+    const musicToggle = document.getElementById('musicToggle');
+    const musicLabel = document.getElementById('musicLabel');
+
+    musicToggle.addEventListener('click', () => {
+      musicOn = !musicOn;
+      musicToggle.classList.toggle('on', musicOn);
+      musicLabel.textContent = musicOn ? 'MUSIC ON' : 'MUSIC OFF';
+      if (musicOn) {
+        ensureAudio();
+        musicTimer = setInterval(musicTick, 200);
+      } else {
+        clearInterval(musicTimer);
+        musicTimer = null;
+      }
+      playBeep(660, 0.06, 'square', 0.05);
+    });
+
+    /* ---------- Сексуальная Тян (Интерактив) ---------- */
+    const girl = document.getElementById('animeGirl');
+    const bubble = document.getElementById('speechBubble');
+    const phrases = [
+      "Привет, милашка! ♡", 
+      "Жми скорее кнопку скачивания!", 
+      "Сыграем со мной? ;) ", 
+      "PGT Studio делает лучшиe игры!", 
+      "Удачной игры, красавчик! ♡"
+    ];
+
+    girl.addEventListener('click', () => {
+      playChirp();
+      const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+      bubble.textContent = randomPhrase;
+      bubble.style.display = 'block';
+      setTimeout(() => { bubble.style.display = 'none'; }, 2200);
+    });
+
+    /* ---------- Модальные окна ---------- */
+    function openModal(id){ document.getElementById(id).classList.add('open'); }
+    function closeModal(el){ el.classList.remove('open'); }
+
+    function cabinetFx(cabinet){
+      cabinet.classList.add('spin');
+      playBeep(700, 0.05, 'square', 0.06);
+      setTimeout(() => cabinet.classList.remove('spin'), 400);
+    }
+
+    const shotsCabinet = document.getElementById('openShots');
+    const flappyCabinet = document.getElementById('openFlappy');
+
+    shotsCabinet.addEventListener('click', () => { cabinetFx(shotsCabinet); openModal('shotsModal'); });
+    flappyCabinet.addEventListener('click', () => { cabinetFx(flappyCabinet); openModal('flappyModal'); resetFlappy(); });
+
+    document.querySelectorAll('.modal-overlay').forEach(ov => {
+      ov.addEventListener('click', e => { if (e.target === ov) closeModal(ov); });
+    });
+
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', e => closeModal(e.target.closest('.modal-overlay')));
+    });
+
+    document.getElementById('downloadLink').addEventListener('click', () => playBeep(1000, 0.1, 'square', 0.06));
+
+    /* ---------- Загрузка скриншотов ---------- */
+    (function(){
+      const grid = document.getElementById('shotsGrid');
+      for (let i = 0; i < 6; i++) {
+        const slot = document.createElement('label');
+        slot.className = 'shot-slot pixel-box';
+        slot.innerHTML = '<span class="plus">+</span><input type="file" accept="image/*">';
+        const input = slot.querySelector('input');
+        input.addEventListener('change', () => {
+          const file = input.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = e => {
+            slot.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            slot.appendChild(img);
+            playBeep(800, 0.08, 'square', 0.06);
+          };
+          reader.readAsDataURL(file);
+        });
+        grid.appendChild(slot);
+      }
+    })();
+
+    /* ---------- Игра Flappy Bird ---------- */
+    const canvas = document.getElementById('flappyCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const flapBtn = document.getElementById('flapBtn');
+
+    let bird, pipes, frame, score, state, raf;
+
+    function resetFlappy(){
+      bird = { x: 50, y: 180, vy: 0, size: 18 };
+      pipes = [];
+      frame = 0;
+      score = 0;
+      state = 'ready';
+      scoreEl.textContent = '0';
+      cancelAnimationFrame(raf);
+      drawFlappy();
+    }
+
+    function flap(){
+      if (state === 'over') { resetFlappy(); return; }
+      if (state === 'ready') { state = 'playing'; loopFlappy(); }
+      bird.vy = -6;
+      playBeep(520, 0.05, 'square', 0.05);
+    }
+
+    flapBtn.addEventListener('click', flap);
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space' && document.getElementById('flappyModal').classList.contains('open')) {
+        e.preventDefault();
+        flap();
+      }
+    });
+    canvas.addEventListener('click', flap);
+
+    function loopFlappy(){
+      if (state !== 'playing') return;
+      frame++;
+      bird.vy += 0.38;
+      bird.y += bird.vy;
+
+      if (frame % 85 === 0) {
+        const gapY = 50 + Math.random() * 210;
+        pipes.push({ x: canvas.width, gapY, gap: 125, w: 36, passed: false });
+      }
+
+      pipes.forEach(p => p.x -= 2.4);
+      pipes = pipes.filter(p => p.x + p.w > -10);
+
+      if (bird.y + bird.size > canvas.height || bird.y < 0) {
+        state = 'over';
+        playBeep(140, 0.25, 'sawtooth', 0.06);
+      }
+
+      pipes.forEach(p => {
+        const withinX = bird.x + bird.size > p.x && bird.x < p.x + p.w;
+        const withinGap = bird.y > p.gapY && bird.y + bird.size < p.gapY + p.gap;
+        if (withinX && !withinGap) {
+          state = 'over';
+          playBeep(140, 0.25, 'sawtooth', 0.06);
+        }
+        if (!p.passed && p.x + p.w < bird.x) {
+          p.passed = true;
+          score++;
+          scoreEl.textContent = score;
+          playBeep(950, 0.08, 'square', 0.06);
+        }
+      });
+
+      drawFlappy();
+      if (state === 'playing') { raf = requestAnimationFrame(loopFlappy); }
+    }
+
+    function drawFlappy(){
+      ctx.fillStyle = '#180f2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      pipes.forEach(p => {
+        ctx.fillStyle = '#5b21b6';
+        ctx.fillRect(p.x, 0, p.w, p.gapY);
+        ctx.fillRect(p.x, p.gapY + p.gap, p.w, canvas.height - (p.gapY + p.gap));
+      });
+
+      ctx.fillStyle = '#ffca6b';
+      ctx.fillRect(bird.x, bird.y, bird.size, bird.size);
+
+      ctx.fillStyle = '#f3ecff';
+      ctx.font = '12px monospace';
+
+      if (state === 'ready') {
+        ctx.fillText('НАЖМИ SPACE', 85, 200);
+      }
+      if (state === 'over') {
+        ctx.fillStyle = 'rgba(10,7,20,.8)';
+        ctx.fillRect(0, 150, canvas.width, 100);
+        ctx.fillStyle = '#ff6fae';
+        ctx.fillText('ИГРА ОКОНЧЕНА', 90, 185);
+        ctx.fillStyle = '#f3ecff';
+        ctx.fillText('СЧЁТ: ' + score, 125, 210);
+        ctx.fillText('НАЖМИ ЧТОБЫ ЗАНОВО', 65, 230);
+      }
+    }
+
+    resetFlappy();
+  </script>
+</body>
+</html>
